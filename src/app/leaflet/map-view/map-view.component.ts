@@ -34,13 +34,11 @@ export class MapViewComponent implements OnInit {
     this.map = new LeafletMap(map);
     this.mapSvc.setMap(this.map);
 
-    this.showGeoKML();
+    this.showGeoKML('kmlOld');
 
   }
   public handleChange(type) {
-    type === 'geojson' ? this.showGeoJSON() :
-      type === 'kml' ? this.showGeoKML() :
-        console.log('No Matching Geometry for selection');
+    type === 'geojson' ? this.showGeoJSON() : this.showGeoKML(type);
   }
 
   private async showGeoJSON() {
@@ -55,13 +53,24 @@ export class MapViewComponent implements OnInit {
 
   }
 
-  private async showGeoKML() {
+  private async showGeoKML(type) {
     if (this.geoJSONLayer) {
       await this.map.removeLayer(this.geoJSONLayer.id);
       this.geoJSONLayer = null;
     }
-    this.kmlLayer = this.factory.createLayer(LayerTypes.KMZ, 'assets/test-ships.kmz');
-    const status = await this.map.addLayer(this.kmlLayer);
+
+    if (this.kmlLayer) {
+      await this.map.removeLayer(this.kmlLayer.id);
+      this.kmlLayer = null;
+    }
+    if (type === 'kmlOld') {
+      this.kmlLayer = this.factory.createLayer(LayerTypes.KMZ, 'assets/test-ships-old.kmz');
+      const status = await this.map.addLayer(this.kmlLayer);
+    } else {
+      this.kmlLayer = this.factory.createLayer(LayerTypes.KMZ, 'assets/test-ships-configurable.kmz');
+      const status = await this.map.addLayer(this.kmlLayer);
+    }
+
 
   }
 

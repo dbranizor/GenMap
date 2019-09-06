@@ -37,7 +37,6 @@ export class KMLRendererImpl implements LayerRenderer {
 
   // TODO: find a remove option for kmz added to map without using widget
   async remove(id) {
-
     const layer = this.leafletLayers.find(ly => ly.id === id).layer;
     this.renderer.MapObjectLayers.pipe(switchMap(l => l), filter(l => l.id !== id));
     console.log('dingo removing', layer);
@@ -48,5 +47,8 @@ export class KMLRendererImpl implements LayerRenderer {
     return null;
   }
 
+  destroy() {
+    this.renderer.MapObjectLayers.unsubscribe();
+  }
 
 }

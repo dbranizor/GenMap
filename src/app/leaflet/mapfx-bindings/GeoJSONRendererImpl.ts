@@ -42,4 +42,8 @@ export class GeoJSONRendererImpl implements LayerRenderer {
     const geom = this.geometries.find(l => l.id === shape);
     return null;
   }
+
+  destroy() {
+    this.renderer.MapObjectLayers.unsubscribe();
+  }
 }

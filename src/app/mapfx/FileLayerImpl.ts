@@ -18,6 +18,7 @@ export class FileLayer<T> implements Layer {
   }
   async destroy() {
     const status = await this.renderer.remove(this.leafletLayer.id);
+    this.renderer.renderer.MapObjectLayers.unsubscribe();
     return status;
   }
 

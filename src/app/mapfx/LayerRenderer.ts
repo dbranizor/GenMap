@@ -8,4 +8,5 @@ export interface LayerRenderer {
   add(shape: unknown): Promise<unknown>;
   remove(id: string): Promise<any>;
   update(shape: any): Promise<any>;
+  destroy(): void;
 }
