@@ -7,4 +7,11 @@
       <option value="geojson">GeoJSON</option>
     </select>
   </div>
-</map-control>
+  <map-control name='Test' [configs]="configs">
+    <div style="color: #fff; font-weight: bold;">
+      <select id="baseLayerSel" (change)="handleBaseLayerChange($event.target.value)">
+        <option value="embedded">Embedded</option>
+        <option value="online">Online</option>
+      </select>
+    </div>
+  </map-control>

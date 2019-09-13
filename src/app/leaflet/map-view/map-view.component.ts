@@ -28,6 +28,10 @@ export class MapViewComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.leafletMap = L.map('map').setView([20, 23], 2.5);
+    this.factory = new LayerFactory(this.leafletMap);
+    this.map = new LeafletMap(this.leafletMap);
+    this.mapSvc.setMap(this.map);
 
     if (env.environment.embedded) {
       this.getEmbeddedLayer();
@@ -41,6 +45,11 @@ export class MapViewComponent implements OnInit {
 
   public handleChange(type) {
     type === 'geojson' ? this.showGeoJSON() : this.showGeoKML(type);
+  }
+
+  public handleBaseLayerChange(type) {
+    console.log('dingo setting base layer');
+    type === 'embedded' ? this.getEmbeddedLayer() : this.getNonEmbeddedLayer();
   }
 
   private async showGeoJSON() {
@@ -57,24 +66,17 @@ export class MapViewComponent implements OnInit {
 
   private async getEmbeddedLayer() {
 
-    this.leafletMap = L.map('map').fitWorld();
-    this.factory = new LayerFactory(this.leafletMap);
 
     const baseLayerName = env.environment.baseLayer;
-    L.tileLayer(`/assets/${env.environment.baseLayer}/{z}/{x}/{y}.png`,
-      { maxZoom: 16 }).addTo(this.leafletMap);
-
-    this.map = new LeafletMap(this.leafletMap);
-    this.mapSvc.setMap(this.map);
+    L.tileLayer(`/assets/${baseLayerName}/{z}/{x}/{y}.png`,
+      { maxZoom: 6 }).addTo(this.leafletMap);
 
   }
 
   private async getNonEmbeddedLayer() {
-    this.leafletMap = L.map('map').fitWorld();
+
     const esriLayer = esri.basemapLayer('DarkGray');
-    this.factory = new LayerFactory(this.leafletMap);
     this.leafletMap.addLayer(esriLayer);
-    this.mapSvc.setMap(this.map);
   }
 
   private async showGeoKML(type) {
