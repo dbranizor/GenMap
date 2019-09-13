@@ -6,7 +6,8 @@ import { APSMap, Layer } from 'src/app/mapfx';
 import { LeafletMap } from '../mapfx-bindings/LeafletMapImpl';
 import { LayerFactory, LayerTypes } from '../mapfx-bindings/LayerFactory';
 import { TracksService } from 'src/app/shared/services/tracks.service';
-
+import * as env from '../../../environments/environment';
+import { LayersService } from 'src/app/shared/services/layers.service';
 
 
 @Component({
@@ -19,24 +20,25 @@ export class MapViewComponent implements OnInit {
   private geoJSONLayer: Layer = null;
   private kmlLayer: Layer = null;
   private factory: LayerFactory = null;
+  private leafletMap: L.Map = null;
   configs: any = {
     position: 'topright'
   };
-  constructor (private mapSvc: MapService, private shpSvc: TracksService) {
+  constructor (private layerSvc: LayersService, private mapSvc: MapService, private shpSvc: TracksService) {
   }
 
   ngOnInit() {
-    const map = L.map('map').setView([39, -97.5], 4);
-    const esriLayer = esri.basemapLayer('DarkGray');
-    this.factory = new LayerFactory(map);
-    map.addLayer(esriLayer);
 
-    this.map = new LeafletMap(map);
-    this.mapSvc.setMap(this.map);
+    if (env.environment.embedded) {
+      this.getEmbeddedLayer();
+    } else {
+      this.getNonEmbeddedLayer();
+    }
 
     this.showGeoKML('kmlOld');
 
   }
+
   public handleChange(type) {
     type === 'geojson' ? this.showGeoJSON() : this.showGeoKML(type);
   }
@@ -51,6 +53,28 @@ export class MapViewComponent implements OnInit {
     this.geoJSONLayer = this.factory.createLayer(LayerTypes.GeoJSON, geoJSON);
     const status = await this.map.addLayer(this.geoJSONLayer);
 
+  }
+
+  private async getEmbeddedLayer() {
+
+    this.leafletMap = L.map('map').fitWorld();
+    this.factory = new LayerFactory(this.leafletMap);
+
+    const baseLayerName = env.environment.baseLayer;
+    L.tileLayer(`/assets/${env.environment.baseLayer}/{z}/{x}/{y}.png`,
+      { maxZoom: 16 }).addTo(this.leafletMap);
+
+    this.map = new LeafletMap(this.leafletMap);
+    this.mapSvc.setMap(this.map);
+
+  }
+
+  private async getNonEmbeddedLayer() {
+    this.leafletMap = L.map('map').fitWorld();
+    const esriLayer = esri.basemapLayer('DarkGray');
+    this.factory = new LayerFactory(this.leafletMap);
+    this.leafletMap.addLayer(esriLayer);
+    this.mapSvc.setMap(this.map);
   }
 
   private async showGeoKML(type) {
