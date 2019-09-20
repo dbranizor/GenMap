@@ -5,7 +5,10 @@
 export const environment = {
   production: false,
   embedded: true,
-  baseLayer: 'osm_auto'
+  baseLayer: 'osm_auto',
+  markerIcons: {
+    currentShipStatus: 'assets/marker-icon.png'
+  }
 };
 
 /*

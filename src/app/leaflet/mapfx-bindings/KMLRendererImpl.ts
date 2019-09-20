@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import 'jszip';
 import 'leaflet-kml';
 import 'leaflet-kmz';
-import { Renderer, AMSLayerData } from 'src/app/mapfx/LayerRenderer';
+import { RendererState, AMSLayerData } from 'src/app/mapfx/LayerRenderer';
 import { BehaviorSubject } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators'
 
@@ -15,7 +15,7 @@ export interface KMZLayer {
 
 export class KMLRendererImpl implements LayerRenderer {
 
-  renderer: Renderer = { mapObjectLayers$: new BehaviorSubject([]), MapObject: null };
+  renderer: RendererState = { mapObjectLayers$: new BehaviorSubject([]), MapObject: null };
   private kmzParser: any = null;
   private leafletLayers: any[] = [];
   constructor (map: L.Map) {

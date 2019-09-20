@@ -10,10 +10,8 @@ import * as env from '../../../environments/environment';
 import { LayersService } from 'src/app/shared/services/layers.service';
 import { LayerTypes } from 'src/app/mapfx/Layer';
 // @ts-ignore
-import {randomPolygon, randomPoint} from '@turf/turf' 
-import { PolyLineShape, PolygonShape, PointShape } from 'src/app/mapfx/GeometryLayerImpl';
-import { FeatureCollection } from 'geojson';
-
+const { randomPolygon, randomPoint } = require('@turf/turf');
+import { PolyLineShape, PolygonShape, PointShape, Coordinate } from 'src/app/mapfx/GeometryLayerImpl';
 
 @Component({
   selector: 'map-view',
@@ -24,17 +22,17 @@ export class MapViewComponent implements OnInit {
   private map: AMSMap;
   private geoJSONLayer: Layer = null;
   private kmlLayer: Layer = null;
-  private factory: LayerFactory = null;
+  private layerFactory: LayerFactory = null;
   private leafletMap: L.Map = null;
   configs: any = {
     position: 'topright'
   };
-  constructor(private layerSvc: LayersService, private mapSvc: MapService, private shpSvc: TracksService) {
+  constructor (private layerSvc: LayersService, private mapSvc: MapService, private shpSvc: TracksService) {
   }
 
   ngOnInit() {
     this.leafletMap = L.map('map').setView([20, 23], 2.5);
-    this.factory = new LayerFactory(this.leafletMap);
+    this.layerFactory = new LayerFactory(this.leafletMap);
     this.map = new LeafletMap(this.leafletMap);
     this.mapSvc.setMap(this.map);
 
@@ -70,7 +68,7 @@ export class MapViewComponent implements OnInit {
 
     try {
       const geoJSON = await this.shpSvc.geoJSON.toPromise();
-      this.geoJSONLayer = this.factory.createLayer(LayerTypes.GeoJSON, geoJSON);
+      this.geoJSONLayer = await this.layerFactory.createLayer(LayerTypes.GeoJSON, geoJSON);
       const status = await this.map.addLayer(this.geoJSONLayer);
     } catch (exception) {
       console.error('Exception Creating GEOJSON', exception);
@@ -93,59 +91,67 @@ export class MapViewComponent implements OnInit {
     this.leafletMap.addLayer(esriLayer);
   }
 
-  public handleGeometry(type){
-    if(type === 'points'){
+  public handleGeometry(type) {
+    if (type === 'points') {
       this.showPoint()
     } else if (type === 'polygon') {
       this.showPolygon()
-    } else if( type === 'linestring'){
+    } else if (type === 'linestring') {
       this.showLineString()
     } else {
       console.error('Dropdown Error', type);
     }
   }
 
-  private showLineString(){
-    const testLineString = {
-      "type" : "FeatureCollection",
-      "features" : [{
-        "type" : "Feature",
-        "geometry" : {
-          "type" : "LineString",
-          "coordinates" : [[-45, 0], [45, 0]]
-        },
-      }, {
-        "type" : "Feature",
-        "geometry" : {
-          "type" : "LineString",
-          "coordinates" : [[0, -45], [0, 45]]
-        },
-      }],
-
-    }
+  private async showLineString() {
 
     // @ts-ignore
-    const layer: Layer = this.factory.createLayer(LayerTypes.Geometry, new PolyLineShape({geometry: testLineString, properties: {}}));
-    this.map.addLayer(layer);
+    const layer1: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[-45, 0], [45, 0]]));
+    layer1.config$.next({ fill: "yellow", "stroke-width": 1 });
+
+    const layer2: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[0, -45], [0, 45]]));
+    layer2.config$.next({ fill: "red" });
+    this.map.addLayer(layer1).then(s => this.map.addLayer(layer2)).then(response => {
+      console.log('dingo remove in controller', layer2.id);
+      this.map.removeLayer(layer2.id)
+    });
+    // layer2.config$.next({ fill: "cyan" });
+
   }
 
-  private showPolygon(){
-    const polygon = randomPolygon(25, {bbox: [-180, 180, 90, -90]});
+  private showPolygon() {
+    // var mypy: FeatureCollection = randomPolygon(25, { bbox: [-180, 180, 90, -90] });
+    // @ts-ignore
+    const polyArr: Array<Array<Coordinate>> = randomPolygon(25, { bbox: [-180, 180, 90, -90] }).features.map(f => {
+      return f.geometry.coordinates.map(cord => {
+        return cord.map(c => {
+          console.log('dingo what are these c?', c.length, c, c[0]);
+          return [c[0], c[1]];
+        });
+      });
+    });
+    polyArr.forEach(async (p) => {
 
-    const layer: Layer = this.factory.createLayer(LayerTypes.Geometry, new PolygonShape({geometry: polygon, properties: {}}))
-    this.map.addLayer(layer);
+      const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolygonShape([p]));
+      console.log('dingo update created layer');
+      // Update color to red
+      layer.config$.next({ fill: 'red' });
+      this.map.addLayer(layer);
+      console.log('dingo update added NOW IT SHOLD RENDER layer');
+    })
+
   }
 
-  private showPoint(){
+  private showPoint() {
     console.log('dingo randompoint', randomPoint);
-    const points = randomPoint(25, {bbox: [-180, 180, 90, -90]});
-      // @ts-ignore
+    const points = randomPoint(25, { bbox: [-180, 180, 90, -90] });
+    // @ts-ignore
     console.log('dingo ALL points', points);
-    points.features.forEach(g => {
-      const layer: Layer = this.factory.createLayer(LayerTypes.Geometry, new PointShape({geometry: g, properties: {}}));
+    points.features.forEach(async (g) => {
+      const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PointShape(g.geometry.coordinates));
       this.map.addLayer(layer);
     });
-    
+
   }
 
   private async showGeoKML(type) {
@@ -170,7 +176,7 @@ export class MapViewComponent implements OnInit {
     }
     if (type === 'kmlOld') {
       try {
-        this.kmlLayer = this.factory.createLayer(LayerTypes.KMZ, 'assets/test-ships-old.kmz');
+        this.kmlLayer = await this.layerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-old.kmz');
       } catch (exception) {
         console.error('Exception Buildign KML Layer', exception);
       }
@@ -178,7 +184,7 @@ export class MapViewComponent implements OnInit {
       const status = await this.map.addLayer(this.kmlLayer);
     } else {
       try {
-        this.kmlLayer = this.factory.createLayer(LayerTypes.KMZ, 'assets/test-ships-configurable.kmz');
+        this.kmlLayer = await this.layerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-configurable.kmz');
       } catch (exception) {
         console.error('Exception Building New KML', exception);
       }

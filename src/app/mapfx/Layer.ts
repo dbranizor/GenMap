@@ -100,6 +100,7 @@ export interface Layer {
   id: string;
   renderer: LayerRenderer;
   destroy(): Promise<any>;
+  render?(): Promise<any>;
 }
 
 export interface MapEntity {

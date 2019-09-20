@@ -1,6 +1,6 @@
 import { Observable, BehaviorSubject } from 'rxjs';
 import { SimpleStyle } from './Layer';
-export interface Renderer {
+export interface RendererState {
   MapObject: any;
   mapObjectLayers$: BehaviorSubject<any[]>;
 }
@@ -10,7 +10,7 @@ export interface AMSLayerData {
   layer: any;
 }
 export interface LayerRenderer {
-  renderer: Renderer;
+  renderer: RendererState;
   add(shape: AMSLayerData): Promise<unknown>;
   remove(id: string): Promise<any>;
   update(shape: any): Promise<any>;

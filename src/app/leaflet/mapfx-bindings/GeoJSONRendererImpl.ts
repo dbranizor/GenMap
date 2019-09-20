@@ -4,12 +4,12 @@ import { geoJSON } from 'leaflet';
 import { GeoJsonObject } from 'geojson';
 import * as uuid from 'uuid/v4';
 import * as L from 'leaflet';
-import { Renderer, AMSLayerData } from 'src/app/mapfx/LayerRenderer';
+import { RendererState, AMSLayerData } from 'src/app/mapfx/LayerRenderer';
 import { BehaviorSubject } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 
 export class GeoJSONRendererImpl implements LayerRenderer {
-  renderer: Renderer = { mapObjectLayers$: new BehaviorSubject([]), MapObject: null }
+  renderer: RendererState = { mapObjectLayers$: new BehaviorSubject([]), MapObject: null }
   private geoLeafLayers: any[] = [];
   constructor (map: L.Map) {
     this.renderer.MapObject = map;

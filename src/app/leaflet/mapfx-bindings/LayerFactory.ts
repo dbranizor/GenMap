@@ -5,7 +5,7 @@ import { GeoJsonGeometryTypes, GeoJsonObject } from 'geojson';
 import * as L from 'leaflet';
 import { LayerTypes, Layer } from 'src/app/mapfx/Layer';
 import { LeafGeometryRendererImpl } from './LeafGeometryRendererImpl';
-import { Renderer, LayerRenderer } from 'src/app/mapfx/LayerRenderer';
+import { RendererState, LayerRenderer } from 'src/app/mapfx/LayerRenderer';
 import { GeometryLayerImpl } from 'src/app/mapfx/GeometryLayerImpl';
 
 
@@ -13,11 +13,11 @@ export class LayerFactory {
 
   private map: L.Map = null;
   private entity: unknown = null;
-  constructor(map: L.Map) {
+  constructor (map: L.Map) {
     this.map = map;
   }
 
-  public createLayer(type: LayerTypes, entity: any): Layer {
+  public async createLayer(type: LayerTypes, entity: any): Promise<Layer> {
     let layer: Layer;
     if (type === LayerTypes.GeoJSON) {
       const renderer = new GeoJSONRendererImpl(this.map);
