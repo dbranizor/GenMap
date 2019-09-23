@@ -1,6 +1,9 @@
-import { Observable } from 'rxjs';
-import { BBox } from 'geojson';
 import { Layer } from './Layer';
+import { BehaviorSubject } from 'rxjs';
+import { Feature, GeoJsonObject, BBox, Polygon } from 'geojson';
+import { Coordinate } from './GeometryLayerImpl';
+
+
 /**
  * APS map class.
  *
@@ -9,15 +12,11 @@ export interface AMSMap {
 
   /** Whatever map entity object is created by the frameworks (cesium Viewer, leaflet L.Map) */
   mapImplementation: unknown;
-  minZoom: Observable<number>;
-  maxZoom: Observable<number>;
+  mapBounds$: BehaviorSubject<Feature<Polygon>>;
+  zoom$: BehaviorSubject<number>;
 
-  /**
-   * Flyto specific bounding box coordinates
-   * @param  {BBox} coord
-   * @returns Promise
-   */
-  setBounds(coord: BBox): Promise<BBox>;
+  flyTo(cord: Coordinate): Promise<any>;
+
   /**
    * Adds layer and stores reference in memory
    * @param  {Layer} layer

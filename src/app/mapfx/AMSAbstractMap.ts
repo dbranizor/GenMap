@@ -2,6 +2,7 @@ import { Layer } from './Layer';
 
 export abstract class AMSAbstractMap<T> {
 
+
   private layers: Layer[] = [];
   // Mapping Frameworks Implementation
   mapImplementation: T = null;

@@ -10,8 +10,11 @@ import * as env from '../../../environments/environment';
 import { LayersService } from 'src/app/shared/services/layers.service';
 import { LayerTypes } from 'src/app/mapfx/Layer';
 // @ts-ignore
+import { bboxPolygon } from '@turf/turf'
 const { randomPolygon, randomPoint } = require('@turf/turf');
 import { PolyLineShape, PolygonShape, PointShape, Coordinate } from 'src/app/mapfx/GeometryLayerImpl';
+import { BBox } from '@turf/helpers';
+import { Feature, Polygon, FeatureCollection, Point } from 'geojson';
 
 @Component({
   selector: 'map-view',
@@ -101,6 +104,23 @@ export class MapViewComponent implements OnInit {
     } else {
       console.error('Dropdown Error', type);
     }
+  }
+
+  public handleBoundingBox(event) {
+    // passing in bbox -- An Array of bounding box coordinates in the form: [xLow, yLow, xHigh, yHigh]
+    const newYorknewYork: Feature<Polygon> = bboxPolygon([-131.4012646154, 23.7448325912, -62.1434521154, 51.6314584737]);
+    this.map.mapBounds$.next(newYorknewYork);
+  }
+
+  public handleFlyTo(event) {
+    const point: FeatureCollection<Point> = randomPoint(1);
+    this.map
+      .flyTo([point.features[0].geometry.coordinates[0], point.features[0].geometry.coordinates[1]])
+      .catch(e => console.error('Got Error Flying To', e));
+  }
+
+  private handleZoom(level) {
+    this.map.zoom$.next(+level);
   }
 
   private async showLineString() {

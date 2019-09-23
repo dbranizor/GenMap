@@ -7,6 +7,9 @@ import * as L from 'leaflet';
 import { RendererState, AMSLayerData } from 'src/app/mapfx/LayerRenderer';
 import { BehaviorSubject } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
+import { render } from 'mustache';
+const bball = require('../../shared/templates/bball.html');
+
 
 export class GeoJSONRendererImpl implements LayerRenderer {
   renderer: RendererState = { mapObjectLayers$: new BehaviorSubject([]), MapObject: null }
@@ -17,7 +20,11 @@ export class GeoJSONRendererImpl implements LayerRenderer {
 
   private geometries: MapEntity[] = [];
   async add(shape: AMSLayerData): Promise<GeoJsonObject> {
-    const geojsonLayer = geoJSON(shape.layer).addTo(this.renderer.MapObject);
+    const geojsonLayer = geoJSON(shape.layer, {
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(render(bball, { item: 'test' }));
+      }
+    }).addTo(this.renderer.MapObject);
     this.geoLeafLayers.push({ id: shape.id, layer: geojsonLayer });
     this.renderer.mapObjectLayers$.next(this.geoLeafLayers);
     return geojsonLayer.toGeoJSON();

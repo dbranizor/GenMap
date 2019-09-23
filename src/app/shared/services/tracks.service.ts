@@ -10,6 +10,6 @@ export class TracksService {
   constructor (private http: HttpClient) { }
 
   public get geoJSON(): Observable<any> {
-    return this.http.get('assets/test-geojson.json');
+    return this.http.get('assets/custom.geo.json');
   }
 }
