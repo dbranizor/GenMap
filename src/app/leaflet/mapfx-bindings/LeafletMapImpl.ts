@@ -25,13 +25,11 @@ export class LeafletMap extends AMSAbstractMap<L.Map> implements AMSMap {
 
 
   private async handleBBounds(mapBounds: Feature<Polygon>) {
-    if (!mapBounds.geometry.coordinates.length) {
+    if (!mapBounds || !mapBounds.geometry.coordinates.length) {
       return;
     }
 
     this._mapBounds = mapBounds;
-
-    console.log('dingo mapBounds', mapBounds.geometry.coordinates);
     // Converts polygon for bbox into N,S,E,W coordinates
     const coordinates = mapBounds.geometry.coordinates[0].reduce((acc, curr) => {
       // first check if value is not zero

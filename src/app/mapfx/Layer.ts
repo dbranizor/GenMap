@@ -87,6 +87,11 @@ export interface SimpleStyle {
   // value must be a floating point number greater than or equal to
   // zero and less or equal to than one
   'fill-opacity'?: number;
+
+  // All of the below properties are NOT simple style. They are display settings
+  'name'?: string;
+  'heading'?: number;
+  'flag'?: string;
 }
 
 export enum LayerTypes {

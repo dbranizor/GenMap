@@ -38,7 +38,6 @@ export abstract class AbstractLayer<T> {
    * @param shape - raw shape file that will be handed to the renderer
   */
   public async render() {
-    console.log('dingo config running the render');
     const status = await this.renderer.add({ id: this.id, layer: this._shape, config: this._config });
     return status;
   }
@@ -48,7 +47,6 @@ export abstract class AbstractLayer<T> {
    * @param shape - raw shape file that will be handed to the renderer
    */
   private async update() {
-    console.log('dingo update config', this._config);
     if (this.mapToolLayer) {
       const status = await this.renderer.update({ id: this.id, layer: this._shape, config: this._config })
 
@@ -86,7 +84,6 @@ export abstract class AbstractLayer<T> {
    * @param shape - raw shape file that will be handed to the renderer
 ]   */
   async destroy() {
-    console.log('dingo remove in abstract layer', this.mapToolLayer.id);
     if (this.mapToolLayer) {
       const status = await this.renderer.remove(this.mapToolLayer.id);
     }

@@ -32,17 +32,15 @@ describe('MapViewComponent', () => {
     const polyArr: Array<Array<Coordinate>> = randomPolygon(25, { bbox: [-180, 180, 90, -90] }).features.map(f => {
       return f.geometry.coordinates.map(cord => {
         return cord.map(c => {
-          console.log('dingo what are these c?', c.length, c, c[0]);
           return [c[0], c[1]];
         });
       });
     });
-    console.log('dingo polyArr', polyArr);
     // @ts-ignore
     const geoLayer = new GeometryLayerImpl(fakeRenderer, polyArr);
     geoLayer.shape$.subscribe(shape => {
       sh = shape;
-    })
+    });
     expect(sh).toBeDefined();
   });
 });

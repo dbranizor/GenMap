@@ -13,7 +13,6 @@ import { LayerTypes } from 'src/app/mapfx/Layer';
 import { bboxPolygon } from '@turf/turf'
 const { randomPolygon, randomPoint } = require('@turf/turf');
 import { PolyLineShape, PolygonShape, PointShape, Coordinate } from 'src/app/mapfx/GeometryLayerImpl';
-import { BBox } from '@turf/helpers';
 import { Feature, Polygon, FeatureCollection, Point } from 'geojson';
 
 @Component({
@@ -54,7 +53,6 @@ export class MapViewComponent implements OnInit {
   }
 
   public handleBaseLayerChange(type) {
-    console.log('dingo setting base layer');
     type === 'embedded' ? this.getEmbeddedLayer() : this.getNonEmbeddedLayer();
   }
 
@@ -72,6 +70,7 @@ export class MapViewComponent implements OnInit {
     try {
       const geoJSON = await this.shpSvc.geoJSON.toPromise();
       this.geoJSONLayer = await this.layerFactory.createLayer(LayerTypes.GeoJSON, geoJSON);
+      this.geoJSONLayer.config$.next({ title: 'Test GEOJSON File with Custom Header', name: 'North America' });
       const status = await this.map.addLayer(this.geoJSONLayer);
     } catch (exception) {
       console.error('Exception Creating GEOJSON', exception);
@@ -132,7 +131,6 @@ export class MapViewComponent implements OnInit {
     const layer2: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[0, -45], [0, 45]]));
     layer2.config$.next({ fill: "red" });
     this.map.addLayer(layer1).then(s => this.map.addLayer(layer2)).then(response => {
-      console.log('dingo remove in controller', layer2.id);
       this.map.removeLayer(layer2.id)
     });
     // layer2.config$.next({ fill: "cyan" });
@@ -145,7 +143,6 @@ export class MapViewComponent implements OnInit {
     const polyArr: Array<Array<Coordinate>> = randomPolygon(25, { bbox: [-180, 180, 90, -90] }).features.map(f => {
       return f.geometry.coordinates.map(cord => {
         return cord.map(c => {
-          console.log('dingo what are these c?', c.length, c, c[0]);
           return [c[0], c[1]];
         });
       });
@@ -153,22 +150,28 @@ export class MapViewComponent implements OnInit {
     polyArr.forEach(async (p) => {
 
       const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolygonShape([p]));
-      console.log('dingo update created layer');
       // Update color to red
       layer.config$.next({ fill: 'red' });
       this.map.addLayer(layer);
-      console.log('dingo update added NOW IT SHOLD RENDER layer');
     })
 
   }
 
   private showPoint() {
-    console.log('dingo randompoint', randomPoint);
+    const vesselType = ['', 'Cargo', 'Tanker', 'Fishing', 'Pleasure Vessel'];
+    const flags = ['', 'US', 'China', 'Canada', 'Mexico'];
     const points = randomPoint(25, { bbox: [-180, 180, 90, -90] });
     // @ts-ignore
-    console.log('dingo ALL points', points);
-    points.features.forEach(async (g) => {
+    points.features.forEach(async (g, i) => {
+      g['properties'] = {
+        title: 'Example Track',
+        heading: Math.floor(Math.random() * 360),
+        name: `Ship # ${i}`,
+        vesselType: vesselType[Math.round(Math.random() * vesselType.length - 1)],
+        flag: flags[Math.round(Math.random() * flags.length - 1)]
+      };
       const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PointShape(g.geometry.coordinates));
+      layer.config$.next(g['properties']);
       this.map.addLayer(layer);
     });
 

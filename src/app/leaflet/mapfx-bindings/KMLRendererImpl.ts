@@ -24,7 +24,6 @@ export class KMLRendererImpl implements LayerRenderer {
   }
 
   async add(ly: AMSLayerData) {
-    console.log('dingo adding kmzlayer', ly);
     // @ts-ignore
     this.kmzParser = new L.KMZParser({
       onKMZLoaded: (leaflayer, name) => {
@@ -40,7 +39,6 @@ export class KMLRendererImpl implements LayerRenderer {
   async remove(id) {
     const layer = this.leafletLayers.find(ly => ly.id === id).layer;
     this.renderer.mapObjectLayers$.pipe(switchMap(l => l), filter(l => l.id !== id));
-    console.log('dingo removing', layer);
     return this.renderer.MapObject.removeLayer(layer);
   }
   // TODO: find an update option for KMZ added to map. Could just re-run?

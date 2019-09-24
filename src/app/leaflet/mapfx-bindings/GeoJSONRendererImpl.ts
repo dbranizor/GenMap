@@ -9,6 +9,8 @@ import { BehaviorSubject } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { render } from 'mustache';
 const bball = require('../../shared/templates/bball.html');
+const header = require('../../shared/templates/header.html');
+const body = require('../../shared/templates/geojson-body.html');
 
 
 export class GeoJSONRendererImpl implements LayerRenderer {
@@ -22,7 +24,7 @@ export class GeoJSONRendererImpl implements LayerRenderer {
   async add(shape: AMSLayerData): Promise<GeoJsonObject> {
     const geojsonLayer = geoJSON(shape.layer, {
       onEachFeature: (feature, layer) => {
-        layer.bindPopup(render(bball, { item: 'test' }));
+        layer.bindPopup(render(bball, { ...shape.config }, { header, body }));
       }
     }).addTo(this.renderer.MapObject);
     this.geoLeafLayers.push({ id: shape.id, layer: geojsonLayer });

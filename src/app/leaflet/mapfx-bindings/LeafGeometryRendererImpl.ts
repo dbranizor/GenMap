@@ -5,10 +5,11 @@ import { AMSGeoJSON, Geometries, GeometryShapes, PolygonShape, Coordinate } from
 import { SimpleStyle } from 'src/app/mapfx';
 import { StyleProperties } from 'src/app/mapfx/Layer';
 import { switchMap, filter } from 'rxjs/operators';
-import { point } from '@turf/turf';
 import { environment } from '../../../environments/environment';
-
-
+import { render } from 'mustache';
+const bball = require('../../shared/templates/bball.html');
+const header = require('../../shared/templates/header.html');
+const body = require('../../shared/templates/track-body.html');
 
 export class LeafGeometryRendererImpl implements LayerRenderer {
   /** Renderer-specific data structure used to store concrete leaflet map entitity and layers */
@@ -22,7 +23,6 @@ export class LeafGeometryRendererImpl implements LayerRenderer {
    * @param amsLayer -- takes an AMS layer that contains shape data and styles and loads a polygon
    */
   async add(amsLayer: AMSLayerData) {
-    console.log('dingo update config GEO', amsLayer.layer, amsLayer.config);
     this.shapeController(amsLayer);
   }
 
@@ -119,7 +119,9 @@ export class LeafGeometryRendererImpl implements LayerRenderer {
   private async loadPoint(amsLayer: AMSLayerData): Promise<L.Marker> {
     const amsPoint = (amsLayer.layer as GeometryShapes).payload.geometry as L.LatLngExpression;
     const icon = new L.Icon({ iconUrl: environment.markerIcons.currentShipStatus });
-    const status = L.marker(amsPoint, { icon }).addTo(this.renderer.MapObject);
+    const status = L.marker(amsPoint, { icon })
+      .addTo(this.renderer.MapObject)
+      .bindPopup(render(bball, { ...amsLayer.config }, { header, body }));
     return status;
   }
 
@@ -142,16 +144,13 @@ export class LeafGeometryRendererImpl implements LayerRenderer {
 
   private getStyleObject(style: SimpleStyle): L.PathOptions {
     let leafStyle: L.PathOptions = {};
-    console.log('dingo update fill', style);
     if (style && Object.keys(style).length > 0) {
       leafStyle = Object.keys(style).reduce<L.PathOptions>((acc, curr) => {
-        console.log('dingo update fill 2', curr, style[curr]);
         if (curr === StyleProperties.StrokeWidth) {
           acc['weight'] = style[curr];
         } else if (curr === StyleProperties.Fill) {
           acc['color'] = style[curr];
         } else if (curr === StyleProperties.FillOpacity) {
-          console.log('dingo update fillopacity', style, style[curr])
           acc['fillOpacity'] = style[curr];
         } else {
           console.info(`SimpleStyle ${curr} not yet configured as setStyle prop`)
