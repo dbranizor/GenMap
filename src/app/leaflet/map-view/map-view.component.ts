@@ -95,11 +95,11 @@ export class MapViewComponent implements OnInit {
 
   public handleGeometry(type) {
     if (type === 'points') {
-      this.showPoint()
+      this.map.clear().then(res => this.showPoint());
     } else if (type === 'polygon') {
-      this.showPolygon()
+      this.map.clear().then(res => this.showPolygon());
     } else if (type === 'linestring') {
-      this.showLineString()
+      this.map.clear().then(res => this.showLineString());
     } else {
       console.error('Dropdown Error', type);
     }

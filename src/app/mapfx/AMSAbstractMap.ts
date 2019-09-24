@@ -21,4 +21,8 @@ export abstract class AMSAbstractMap<T> {
     layer.destroy();
     return this.layers;
   }
+
+  async clear(): Promise<any> {
+    return this.layers.forEach(l => l.destroy());
+  }
 }

@@ -12,9 +12,13 @@ export interface AMSMap {
 
   /** Whatever map entity object is created by the frameworks (cesium Viewer, leaflet L.Map) */
   mapImplementation: unknown;
+  /** Fits map bounds provided to screen and updates mapbounds property */
   mapBounds$: BehaviorSubject<Feature<Polygon>>;
+  /** Handle Zoom in */
+  //TODO: Wireup the zoom callbacks so that zooming in \ out caught by map
   zoom$: BehaviorSubject<number>;
 
+  /** Flys to coordinates */
   flyTo(cord: Coordinate): Promise<any>;
 
   /**
@@ -29,4 +33,6 @@ export interface AMSMap {
    * @returns Promise
    */
   removeLayer(id: string): Promise<Layer[]>;
+  /** Removes Layers */
+  clear(): Promise<any>;
 }

@@ -25,6 +25,9 @@ export class AMSMockMap implements AMSMap {
     return null;
   }
 
+  async clear() {
+    return null;
+  }
 
 }
 
