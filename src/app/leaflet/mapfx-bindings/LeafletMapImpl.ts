@@ -13,9 +13,10 @@ export class LeafletMap extends AMSAbstractMap<L.Map> implements AMSMap {
     this.zoom$.subscribe(this.handleZoomLevel.bind(this));
   }
 
-
+  /** Update Mapbounds */
   mapBounds$: BehaviorSubject<Feature<Polygon>> = new BehaviorSubject(null);
   private _mapBounds: Feature<Polygon> = null;
+  /** Controls zoom */
   zoom$: BehaviorSubject<number> = new BehaviorSubject(null);
   private _zoomLevel: number = null;
   async flyTo(cord: Coordinate): Promise<any> {

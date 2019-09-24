@@ -24,7 +24,6 @@ export class MapViewComponent implements OnInit {
   private map: AMSMap;
   private geoJSONLayer: Layer = null;
   private kmlLayer: Layer = null;
-  private layerFactory: LayerFactory = null;
   private leafletMap: L.Map = null;
   configs: any = {
     position: 'topright'
@@ -34,7 +33,7 @@ export class MapViewComponent implements OnInit {
 
   ngOnInit() {
     this.leafletMap = L.map('map').setView([20, 23], 2.5);
-    this.layerFactory = new LayerFactory(this.leafletMap);
+    LayerFactory.map = this.leafletMap;
     this.map = new LeafletMap(this.leafletMap);
     this.mapSvc.setMap(this.map);
 
@@ -69,7 +68,7 @@ export class MapViewComponent implements OnInit {
 
     try {
       const geoJSON = await this.shpSvc.geoJSON.toPromise();
-      this.geoJSONLayer = await this.layerFactory.createLayer(LayerTypes.GeoJSON, geoJSON);
+      this.geoJSONLayer = await LayerFactory.createLayer(LayerTypes.GeoJSON, geoJSON);
       this.geoJSONLayer.config$.next({ title: 'Test GEOJSON File with Custom Header', name: 'North America' });
       const status = await this.map.addLayer(this.geoJSONLayer);
     } catch (exception) {
@@ -125,10 +124,10 @@ export class MapViewComponent implements OnInit {
   private async showLineString() {
 
     // @ts-ignore
-    const layer1: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[-45, 0], [45, 0]]));
+    const layer1: Layer = await LayerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[-45, 0], [45, 0]]));
     layer1.config$.next({ fill: "yellow", "stroke-width": 1 });
 
-    const layer2: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[0, -45], [0, 45]]));
+    const layer2: Layer = await LayerFactory.createLayer(LayerTypes.Geometry, new PolyLineShape([[0, -45], [0, 45]]));
     layer2.config$.next({ fill: "red" });
     this.map.addLayer(layer1).then(s => this.map.addLayer(layer2)).then(response => {
       this.map.removeLayer(layer2.id)
@@ -149,11 +148,11 @@ export class MapViewComponent implements OnInit {
     });
     polyArr.forEach(async (p) => {
 
-      const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PolygonShape([p]));
+      const layer: Layer = await LayerFactory.createLayer(LayerTypes.Geometry, new PolygonShape([p]));
       // Update color to red
       layer.config$.next({ fill: 'red' });
       this.map.addLayer(layer);
-    })
+    });
 
   }
 
@@ -170,7 +169,7 @@ export class MapViewComponent implements OnInit {
         vesselType: vesselType[Math.round(Math.random() * vesselType.length - 1)],
         flag: flags[Math.round(Math.random() * flags.length - 1)]
       };
-      const layer: Layer = await this.layerFactory.createLayer(LayerTypes.Geometry, new PointShape(g.geometry.coordinates));
+      const layer: Layer = await LayerFactory.createLayer(LayerTypes.Geometry, new PointShape(g.geometry.coordinates));
       layer.config$.next(g['properties']);
       this.map.addLayer(layer);
     });
@@ -199,7 +198,7 @@ export class MapViewComponent implements OnInit {
     }
     if (type === 'kmlOld') {
       try {
-        this.kmlLayer = await this.layerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-old.kmz');
+        this.kmlLayer = await LayerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-old.kmz');
       } catch (exception) {
         console.error('Exception Buildign KML Layer', exception);
       }
@@ -207,7 +206,7 @@ export class MapViewComponent implements OnInit {
       const status = await this.map.addLayer(this.kmlLayer);
     } else {
       try {
-        this.kmlLayer = await this.layerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-configurable.kmz');
+        this.kmlLayer = await LayerFactory.createLayer(LayerTypes.KMZ, 'assets/test-ships-configurable.kmz');
       } catch (exception) {
         console.error('Exception Building New KML', exception);
       }
