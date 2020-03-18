@@ -2,7 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef, Input, OnDestroy } from '@ang
 import { APSMapWidget, APSMap } from 'src/app/mapfx';
 import { LeafletWidgetImpl } from '../mapfx-bindings/LeafletWidgetImpl';
 import { MapService } from 'src/app/shared/services/map.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'map-control',
@@ -17,17 +18,20 @@ export class MapControlsComponent implements OnInit, OnDestroy {
 
   public widget: APSMapWidget = null;
   public map: APSMap = null;
-  private mapSubscription: Subscription = null;
   public element: any = null;
+  private unsubscribe$ = new Subject<void>();
 
-  constructor (private mapService: MapService) { }
+  constructor(private mapService: MapService) { }
 
   ngOnInit() {
-    this.mapSubscription = this.mapService.apsMap.subscribe(m => this.initMap(m));
+    this.mapService.apsMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(m => this.initMap(m));
   }
 
   ngOnDestroy() {
-    this.mapSubscription.unsubscribe();
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   private initMap(map: APSMap) {

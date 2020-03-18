@@ -4,8 +4,8 @@ import 'jszip';
 import 'leaflet-kml';
 import 'leaflet-kmz';
 import { Renderer } from 'src/app/mapfx/LayerRenderer';
-import { BehaviorSubject } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators'
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, switchMap, takeUntil } from 'rxjs/operators'
 
 export interface KMZLayer {
   id: string;
@@ -14,12 +14,17 @@ export interface KMZLayer {
 
 export class KMLRendererImpl implements LayerRenderer {
 
-  renderer: Renderer = { MapObjectLayers: new BehaviorSubject([]), MapObject: null };
+  renderer: Renderer = {
+    MapObjectLayers: new BehaviorSubject([]), MapObject: null
+  };
   private kmzParser: any = null;
   private leafletLayers: any[] = [];
-  constructor (map: L.Map) {
+  private unsubscribe$ = new Subject<void>();
+  constructor(map: L.Map) {
     this.renderer.MapObject = map;
-    this.renderer.MapObjectLayers.subscribe(l => this.leafletLayers = l);
+    this.renderer.MapObjectLayers
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(l => this.leafletLayers = l);
 
   }
 
@@ -39,7 +44,6 @@ export class KMLRendererImpl implements LayerRenderer {
   async remove(id) {
     const layer = this.leafletLayers.find(ly => ly.id === id).layer;
     this.renderer.MapObjectLayers.pipe(switchMap(l => l), filter(l => l.id !== id));
-    console.log('dingo removing', layer);
     return this.renderer.MapObject.removeLayer(layer);
   }
   // TODO: find an update option for KMZ added to map. Could just re-run?
@@ -48,7 +52,8 @@ export class KMLRendererImpl implements LayerRenderer {
   }
 
   destroy() {
-    this.renderer.MapObjectLayers.unsubscribe();
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

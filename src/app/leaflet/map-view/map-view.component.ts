@@ -60,7 +60,7 @@ export class MapViewComponent implements OnInit {
 
     const geoJSON = await this.shpSvc.geoJSON.toPromise();
     this.geoJSONLayer = this.factory.createLayer(LayerTypes.GeoJSON, geoJSON);
-    const status = await this.map.addLayer(this.geoJSONLayer);
+    await this.map.addLayer(this.geoJSONLayer);
 
   }
 
